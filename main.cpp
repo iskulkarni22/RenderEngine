@@ -13,6 +13,7 @@ const int height = 720;
 bool isLeftDragging = false;
 bool isRightDragging = false;
 bool movingLight = false;
+bool isTurning = false;
 double prev_x = width / 2.0;
 double prev_y = height / 2.0;
 float yRot;
@@ -107,6 +108,8 @@ void display(GLFWwindow *window, GLuint vao, int nv, std::vector<material>& mate
     // swap buffers (double buffering, done rendering image so swap front and back buffers)
     glfwSwapBuffers(window);
 }
+
+
 
 void setLightDirection() {
     shaderProgram.Bind();
@@ -212,6 +215,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             setLightDirection();
         }
         break;
+    case GLFW_KEY_T:
+        if (action == GLFW_PRESS) {
+            isTurning = !isTurning;
+        }
+        break;
     default:
         break;
     }
@@ -245,7 +253,6 @@ static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 
         setLightDirection();
     }
-
     // std::cout << (isLeftDragging ? "Dragging" : "Not dragging") << std::endl;
 }
 
@@ -458,8 +465,18 @@ int main(int argc, char *argv[]) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     
+    float lastFrame = 0.0f;
     // loop until window closed
     while (!glfwWindowShouldClose(window)) {
+        float currentFrame = glfwGetTime();
+        float deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        
+        if (isTurning) {
+            xRot += cy::Deg2Rad(45.0 * deltaTime);
+            updateCameraMatrices();
+        }
+
         glViewport(0, 0, width, height);
         display(window, vao, nv, materials);
 
