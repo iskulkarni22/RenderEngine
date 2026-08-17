@@ -18,8 +18,6 @@ double prev_x = width / 2.0;
 double prev_y = height / 2.0;
 float yRot;
 float xRot;
-double prev_x_l = width / 2.0;
-double prev_y_l = height / 2.0;
 float yRot_l = cy::Deg2Rad(-40.0f);
 float xRot_l = cy::Deg2Rad(210.0f);
 bool swap = true;
@@ -57,8 +55,7 @@ void display(GLFWwindow *window, GLuint vao, int nv, std::vector<material>& mate
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     shaderProgram.Bind();
-    // glEnableVertexAttribArray(0);
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glBindVertexArray(vao);
 
     for (int i = 0; i < materials.size(); i++) {
@@ -114,11 +111,8 @@ void display(GLFWwindow *window, GLuint vao, int nv, std::vector<material>& mate
 void setLightDirection() {
     shaderProgram.Bind();
     
-    // std::cout << xRot_l << " " << yRot_l << std::endl;
     cyVec3f lightDir = cyVec3f(-cos(yRot_l)*sin(xRot_l), -sin(yRot_l), -cos(yRot_l)*cos(xRot_l));
-    // if (swap) {
-    //     lightDir = cyVec3f(-cos(yRot_l)*sin(xRot_l), -cos(yRot_l)*cos(xRot_l), -sin(yRot_l));
-    // }
+
     lightDir.Normalize();
     shaderProgram["lightDir"] = lightDir;
 }
@@ -199,8 +193,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
         if (action == GLFW_PRESS) {
             movingLight = true;
-            prev_x_l = x;
-            prev_y_l = y;
+            prev_x = x;
+            prev_y = y;
         } else if (action == GLFW_RELEASE) {
             movingLight = false;
         }
@@ -215,7 +209,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             setLightDirection();
         }
         break;
-    case GLFW_KEY_T:
+    case GLFW_KEY_T: // toggle turntable anim
         if (action == GLFW_PRESS) {
             isTurning = !isTurning;
         }
@@ -226,34 +220,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 static void cursor_callback(GLFWwindow* window, double xpos, double ypos) {
-    // std::cout << xpos << " " << ypos << std::endl;
     if (isLeftDragging && !movingLight) {    
         yRot += cy::Deg2Rad(ypos - prev_y) * sensitivity;
         xRot += cy::Deg2Rad(xpos - prev_x) * sensitivity;
-
-        prev_y = ypos;
-        prev_x = xpos;
-        updateCameraMatrices();
     } else if (isRightDragging && !movingLight) {
         if (ypos > prev_y) {
             zoom += zoomFactor * sensitivity;
         } else if (ypos < prev_y) {
             zoom -= zoomFactor * sensitivity;
         }
-        prev_y = ypos;
-        updateCameraMatrices();
     } else if (movingLight && isLeftDragging) {
-        yRot_l += cy::Deg2Rad(ypos - prev_y_l) * sensitivity;
-        xRot_l += cy::Deg2Rad(xpos - prev_x_l) * sensitivity;
-
-        prev_y_l = ypos;
-        prev_x_l = xpos;
-        prev_y = ypos;
-        prev_x = xpos;
-
-        setLightDirection();
+        yRot_l += cy::Deg2Rad(ypos - prev_y) * sensitivity;
+        xRot_l += cy::Deg2Rad(xpos - prev_x) * sensitivity;
     }
-    // std::cout << (isLeftDragging ? "Dragging" : "Not dragging") << std::endl;
+    updateCameraMatrices();
+    setLightDirection();
+    prev_y = ypos;
+    prev_x = xpos;
 }
 
 void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -262,31 +245,14 @@ void mouse_callback(GLFWwindow* window, int button, int action, int mods) {
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         isLeftDragging = true;
-        // std::cout << "Dragging" << std::endl;
-        if (movingLight) {
-            prev_x_l = x;
-            prev_y_l = y;
-        } else {
-            prev_x = x;
-            prev_y = y;
-        }
-        
-        // updateCameraAngle(window);
-
-        return;
+        prev_x = x;
+        prev_y = y;
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         isLeftDragging = false;
-        // std::cout << "Not dragging" << std::endl;
-        // std::cout << x << " " << y << std::endl;
-    }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+    } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         isRightDragging = true;
-        // std::cout << "Zooming" << std::endl;
-
-        // updateCameraAngle(window);
     } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
         isRightDragging = false;
-
     }
 }
 
@@ -458,9 +424,9 @@ int main(int argc, char *argv[]) {
     glEnableVertexAttribArray(txc);
     glVertexAttribPointer(txc, 2, GL_FLOAT, GL_FALSE, sizeof(cyVec2f), (GLvoid*)0);
 
+    
     updateCameraMatrices();
     setLightDirection();
-
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
