@@ -7,4 +7,7 @@
   <img width="618" height="418" alt="Screenshot 2026-08-11 at 1 20 17 AM" src="https://github.com/user-attachments/assets/f96e472d-0ee9-435f-9cdf-89eff32fcdd8" />
   
   <img width="800" height="487" alt="Screen Recording 2026-08-11 at 1 43 55 AM" src="https://github.com/user-attachments/assets/08cdaf3d-8c85-4453-89b1-c4414639b82a" />
+
+  <img width="1269" height="701" alt="Screenshot 2026-09-10 at 11 58 45 AM" src="https://github.com/user-attachments/assets/171b8a43-751e-4cd7-b95a-b52b35ba6ca9" />
+
 </div>
